@@ -1,0 +1,87 @@
+Please generate the source code in Python for the Binance trading bot with the following functionality:
+
+Step #0: An infinite loop is started
+Step #1: Select a current buy order from the database where status is NEW or PARTIALLY_FILLED and type is buy limit order
+If the current buy order does not exist
+    Step #2: Calculate buy_price with a separate function
+    If buy_price equals zero
+        Step #3: Create new buy market order with value equalst to buy_value (please use a separate function described below to calculate buy_value)
+        If not enough quote exception is thrown, wait for 60 seconds, otherwise save the buy market order to the database with price equals to the average price of fills and status equals to FILLED and amount equals to buy_value
+    If buy_price more than zero
+        Step #4: Create new buy limit order with buy_price and buy_value, buy_value is calculated based on a separate function
+        If not enough quote exception is thrown, wait 60 seconds, otherwise save the buy limit order to database
+If the the current buy order exists then
+    Step #5: Update the current buy order status from Binance and save status and filled amount of the current buy order to database
+    If the current buy order status is FILLED then
+        Return to the Step #0 (start of the loop)
+    If the current buy order status if not FILLED then 
+        Step #6: Calculate buy_price with a separate function
+        If buy_price equals zero then
+            Step #7: Cancel the current buy order at Binance and read the result of the cancellation
+            If status is CANCELED then
+                If filled amount of the canceled current buy order is zero, then 
+                    Step #8: Delete the current buy order from the database and return to the Step #0 (start of the loop)
+                If the filled amount of the current buy order is above zero
+                    Step #9: Save the current buy order to database with status equal FILLED and the filled amount value and return to the Step #0 (start of the loop)
+            If status is not CANCELED then continue with Step #9
+        If buy_price more than zero then
+            If buy_price equal to the current buy order price then
+                Step #10: Select the current sell order from the database where status is NEW or PARTIALLY_FILLED and type is limit sell order
+                If the current buy order does not exist
+                    Step #11: Calculate sell_price with sell_price function described below
+                    If sell_price is zero, then return to the Step #0 (start of the loop)
+                    If sell_price is not zero, then
+                        Step #12: Create new sell limit order with sell_price, add reference to the current buy order
+                        If not enough base exception is thrown, set the current sell order profit field equals to 0, and set status as FILLED, and then save the sell limit order to database and return to the Step #0 (start of the loop)
+                If the current buy order exists
+                    Step #13: Get the current sell limit order status from Binance and save the current sell limit order status and filled amount to database
+                    If the current sell limit order status is FILLED, then return to the Step #0 (start of the loop)
+                    If the current sell limit order status is not FILLED, then
+                        Step #14: Calculate sell_price with sell_price function described below
+                        If sell_price is zero, then return to the Step #0 (start of the loop)
+                        If sell_price is not zero, then
+                            If sell_price equals to the current sell order price then wait 1 second return to the Step #0 (start of the loop)
+                            if sell_price does not equal to the current sell order price then
+                                Step #17: Cancel the current sell limit order at Binance and read the result of the cancellation
+                                If status is CANCELED then
+                                    If filled amount of the canceled current sell order is zero, then 
+                                        Step #18: Delete the current sell order from the database and return to the Step #0 (start of the loop)
+                                    If the filled amount of the current sell order is above zero
+                                        Step #19: Save the current sell order to database with status equal FILLED and the filled amount value and return to the Step #0 (start of the loop)
+                                If status is CANCELED then continue with Step #19
+            If buy_price is not equal to the current order price then continue with Step #7
+
+Please create calculate buy_price function with the following functionality:
+- Select a buy limit order with the minimum price (min_price) and without corresponding FILLED sell limit order(s) that covers full amount of the buy order, if it does not exist, return zero
+- Get all Binance BUY limit orders from (min_price - max_buy) till min_price
+- Split it on min_step intervals
+- Calculate amount for every interval and find an interval with the maximum value
+- Set buy_price price one step above maximal interval, but not more than (min_price - min_buy)
+End of calculate buy_price function
+
+Please create calculate buy_value function with the following functionality:
+- Calculate expected price as moving average for ma_days
+- Calculate average step as (min_buy+max_buy)/2
+- Get Binance quote balance
+- Calculate buy_value as max_value - abs(expected price - buy_price)/(quote balance / average step)
+- If buy_value < min_value return min_value, otherwise return buy_value 
+End of calculate buy_value function
+
+Please create calculate sell_price function with the following functionality:
+- Select a buy limit order with the minimum price (min_price) and without corresponding FILLED sell limit order(s) that covers full amount of the buy order, if it does not exist, return zero
+- Get all Binance SELL limit orders from min_price till min_price + max_profit
+- Split it on min_step intervals
+- Calculate amount for every interval and find an interval with the maximum value
+- Set sell_price price one step below maximal interval, but not less than (min_price + min_profit)
+End of calculate sell_price function
+
+Please use Binance as a trading platform and PostgreSQL as a database
+Please follow the SOLID principles and keep the source code as simple as possible
+Please use BTCTUSD trading pair
+Please use a separate class for working with database, please add to this class a separate method to clean up database abd re-create tables
+Please use a separate class for configuration parameters
+Please use a separate class to calculate price
+Please use try exept for the main loop and log errors into a database
+Please put every class in a separate source file
+Please add comments incide source code
+Please use other best practices for Python and object oriented programming
