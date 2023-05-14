@@ -85,3 +85,6 @@ Please use try exept for the main loop and log errors into a database
 Please put every class in a separate source file
 Please add comments incide source code
 Please use other best practices for Python and object oriented programming
+Please use Python version 3.10.5
+Please create SQP scripts to create database tables
+For binance API keys please use a separate file binance.ini for other parametes please use config.ini
