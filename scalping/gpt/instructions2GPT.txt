@@ -77,14 +77,25 @@ End of calculate sell_price function
 
 Please use Binance as a trading platform and PostgreSQL as a database
 Please follow the SOLID principles and keep the source code as simple as possible
-Please use BTCTUSD trading pair
-Please use a separate class for working with database, please add to this class a separate method to clean up database abd re-create tables
-Please use a separate class for configuration parameters
-Please use a separate class to calculate price
+Please use a separate class with name DB for working with database, please add to this class a separate method to clean up database abd re-create tables
+Please use a separate class with name Config for configuration parameters
+Please use a separate class with name Price to calculate price
+Please create the entire project structure with all the classes, functions, and files, all files and classes should be in the root directory
 Please use try exept for the main loop and log errors into a database
 Please put every class in a separate source file
 Please add comments incide source code
 Please use other best practices for Python and object oriented programming
 Please use Python version 3.10.5
-Please create SQP scripts to create database tables
-For binance API keys please use a separate file binance.ini for other parametes please use config.ini
+Please create SQL scripts to create database tables in the existing PostgreSQL database with name "scalping"
+For binance API keys please use a separate file binance.ini, please generate this file and leave values empty I will add them later by myself
+For other parametes please generate config.ini file wth the following parameters:
+    max_profit - maximum profit from one order, default is 50
+    min_profit - minimum profit from one order, default is 10
+    min_step - intervals to count order levels, default is 1
+    min_buy - minimal price to go down from previous buy order, default is 10
+    max_buy - maximum price to go down from previous buy order, default is 50
+    step - minimal step in price, default is 0.1
+    min_value - minimal amount of value in order, default is $10
+    max_value - maximum amount of value in order, default is $50
+    ma_days - amount of days in moving average, default is 7
+    simbol - trading pair, by default is BTCTUSD
