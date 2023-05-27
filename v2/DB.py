@@ -10,11 +10,16 @@ import os
 import psycopg2
 from Order import Order
 import traceback
+import configparser
 
 class DB():
 
     def __init__(self):
-        self.conn = psycopg2.connect(database="binance", host = "127.0.0.1", port = "5432", user="ubuntu", password="ubuntu")
+        config = configparser.ConfigParser()
+        config.read('config.cfg')
+        password = config.get('database', 'password')
+
+        self.conn = psycopg2.connect(database="binance", host = "127.0.0.1", port = "5432", user="ubuntu", password=password)
         self.curs = self.conn.cursor()
     
     def addLog(self, type, message):
