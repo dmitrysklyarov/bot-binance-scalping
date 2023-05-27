@@ -11,10 +11,10 @@ class Trade():
     def __init__(self):
 
         config = configparser.ConfigParser()
-        config.read('binance.ini')
+        config.read('secret.conf')
 
-        api_key = config.get('API', 'API_KEY')
-        api_secret = config.get('API', 'API_SECRET')
+        api_key = config.get('binance', 'API_KEY')
+        api_secret = config.get('binance', 'API_SECRET')
         self.binance = Binance(
             API_KEY= api_key,
             API_SECRET= api_secret)
