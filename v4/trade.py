@@ -1,6 +1,7 @@
 import configparser
 import psycopg2
 import database
+import config
 
 from binance import Binance
 from order import Order
@@ -30,6 +31,10 @@ class Trade:
             self._curs.close()
         if self._conn is not None:
             self._conn.close()
+
+    def getMarketPrice(self):
+        result = self._binance.tickerPrice(symbol = config.getSymbol())
+        return float(result['price'])
 
     def getOpenedBuyLimitOrder(self):
         self._curs.execute("SELECT * FROM buy WHERE status = 'NEW' OR status = 'PARTIALLY_FILLED'")
