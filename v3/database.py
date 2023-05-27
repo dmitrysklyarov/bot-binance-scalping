@@ -5,10 +5,15 @@
 import psycopg2
 import conf
 from order import Order
+import configparser
 
 class Database():
     def __init__(self):
-        self.conn = psycopg2.connect(database="trade", host = "127.0.0.1", port = "5432", user="ubuntu", password="ubuntu")
+        config = configparser.ConfigParser()
+        config.read('secret.conf')
+        password = config.get('database', 'password')
+
+        self.conn = psycopg2.connect(database="trade", host = "127.0.0.1", port = "5432", user="ubuntu", password=password)
         self.curs = self.conn.cursor()
 
     #BUY ORDERS CHAPTER ---------------------------------------------------------------------------
