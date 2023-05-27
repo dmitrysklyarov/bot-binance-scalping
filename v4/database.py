@@ -1,6 +1,5 @@
-#run "createdb botv4" command in order to create database
+#run "createdb -O ubuntu botv4" command in order to create database
 #then run "python3 database.py" command to create tables
-
 
 import sys
 import psycopg2
