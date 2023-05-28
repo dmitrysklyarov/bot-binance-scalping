@@ -28,7 +28,7 @@ def main():
                 openedBuyLimitOrder = trade.getOpenedBuyLimitOrder()
                 if openedBuyLimitOrder is None:
                     #2. Calculate buy_price
-                    buy_price = calculator.calculateBuyPrice(trade.getLowestNotSatisfiedOrder())
+                    buy_price = calculator.calculateBuyPrice(trade.getNotSatisfiedOrder(False))
                     buy_value = calculator.calculateBuyValue()
                     if buy_price == 0:
                         #3. Create buy market order with buy_value
@@ -37,8 +37,14 @@ def main():
                         #4. Create new buy limit order with buy_price and buy_value
                         openedBuyLimitOrder = trade.createBuyLimitOrder(buy_price, buy_value)
                     if openedBuyLimitOrder is None:
-                        # If not enough quote, then updated top limit order to the current price
-                        trade.replaceTopLimitOrderWithCurrentPrice(buy_price)
+                        # If not enough quote, then sell top order
+                        sellMarketOrder = trade.createSellMarketOrder(trade.getNotSatisfiedOrder(True))
+                        if sellMarketOrder is None:
+                            wait(60)
+                            raise Exception("Nothing to sell and not enough quote")
+                        else:
+                            sellMarketOrder.insert()
+                            sellMarketOrder.update()#in order to set up satisfaction to buy order
                     else:
                         # Otherwise, insert buy order to database (price, status = FILLED, average amount)
                         openedBuyLimitOrder.insert()
@@ -49,7 +55,7 @@ def main():
                     if openedBuyLimitOrder._status == "FILLED":
                         continue
                     #6. Calculate buy_price
-                    buy_price = calculator.calculateBuyPrice(trade.getLowestNotSatisfiedOrder())
+                    buy_price = calculator.calculateBuyPrice(trade.getNotSatisfiedOrder(False))
                     if buy_price == 0 or buy_price != openedBuyLimitOrder._price:
                         #7. Cancel the buy limit order
                         openedBuyLimitOrder = trade.cancelLimitOrder(openedBuyLimitOrder)
@@ -65,7 +71,7 @@ def main():
                         openedSellLimitOrder = trade.getOpenedSellLimitOrder()
                         if openedSellLimitOrder is None:
                             #11. Calculate sell_price
-                            correspondingBuyOrder, sell_price = calculator.calculateSellPrice(trade.getLowestNotSatisfiedOrder(), trade._commission_ratio)
+                            correspondingBuyOrder, sell_price = calculator.calculateSellPrice(trade.getNotSatisfiedOrder(False), trade._commission_ratio)
                             if sell_price == 0 or correspondingBuyOrder is None:
                                 continue
                             #12. Create new sell limit order with sell_price
@@ -84,7 +90,7 @@ def main():
                                 continue
 
                             #PROBLEM getLowestNotSatisfiedOrder or correspondingBuyOrder
-                            correspondingBuyOrder, sell_price = calculator.calculateSellPrice(trade.getLowestNotSatisfiedOrder(), trade._commission_ratio)
+                            correspondingBuyOrder, sell_price = calculator.calculateSellPrice(trade.getNotSatisfiedOrder(False), trade._commission_ratio)
                             if sell_price == 0 or correspondingBuyOrder is None:
                                 continue
 

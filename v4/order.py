@@ -50,7 +50,6 @@ class Order:
             self._cursor.execute(f'''UPDATE {self._direction.value} SET 
                                      buy_id = {self._buy_id}
                                      WHERE id = {self._id}''')
-
         self._connection.commit()
         return self
 

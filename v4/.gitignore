@@ -1,3 +1,5 @@
 secret.conf
 instructions.txt
-/__pycache__
+commands.py
+__pycache__/
+*.pyc

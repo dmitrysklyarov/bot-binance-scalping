@@ -62,8 +62,11 @@ class Trade:
     def getOpenedSellLimitOrder(self):
         return self.__getOpenedLimitOrder(OrderDirection.SELL)
     
-    def getLowestNotSatisfiedOrder(self):
-        self._curs.execute(f"SELECT * FROM {OrderDirection.BUY.value} WHERE satisfied = False AND status = 'FILLED' ORDER BY price ASC LIMIT 1")
+    def getNotSatisfiedOrder(self, top=False):
+        orderBy = "ASC"
+        if top:
+            orderBy = "DESC"
+        self._curs.execute(f"SELECT * FROM {OrderDirection.BUY.value} WHERE satisfied = False AND status = 'FILLED' ORDER BY price {orderBy} LIMIT 1")
         result = self._curs.fetchone()
         if result is None:
             return None
@@ -139,24 +142,47 @@ class Trade:
                 return None
             else:
                 raise err
-
-    def replaceTopLimitOrderWithCurrentPrice(self, buy_price):
-        if buy_price == 0:
-            buy_price = self.getMarketPrice()
-        self._curs.execute(f'''SELECT id, price, profit, quantity FROM {OrderDirection.BUY.value} 
-                           WHERE status = 'FILLED' AND NOT satisfied
-                           ORDER BY price DESC LIMIT 1)''')
-        id, top_price, top_profit, top_quantity = self._curs.fetchone()
-        self._curs.execute(f'''UPDATE {OrderDirection.BUY.value} 
-                           SET price = {buy_price}, profit = {top_profit + (buy_price - top_price) * top_quantity}
-                           WHERE status = 'FILLED' 
-                           AND id = {id}''')
-        self._conn.commit()
-        return self
     
     def cleanAllNotSatisfiedBuyOrders(self):
         self._curs.execute(f"DELETE FROM {OrderDirection.BUY.value} WHERE satisfied = False")
         self._conn.commit()
+
+    def createSellMarketOrder(self, correspondingBuyOrder:Order):
+        try:
+            quantity = correspondingBuyOrder._quantity
+            type = 'MARKET'
+            result = self._binance.createOrder(
+                symbol = config.getSymbol(),
+                side = 'SELL',
+                type = type,
+                quantity = quantity
+                )
+            amount = 0
+            commission = 0
+            for fill in result['fills']:
+                amount += float(fill['price']) * float(fill['qty'])
+                commission += float(fill['commission'])
+            price = round(amount / quantity, 2)
+            self._commission_ratio = round(commission / quantity, 6)
+            order = Order(self._conn, 
+                        OrderDirection.SELL, 
+                        (result['orderId'],                                             #id
+                        0,                                                              #date
+                        type,                                                           #type
+                        'FILLED',                                                       #status 
+                        quantity,                                                       #quantity
+                        quantity,                                                       #filled
+                        price,                                                          #price
+                        round(price * (self._commission_ratio), 4),                     #commission
+                        round((price - correspondingBuyOrder._price) * quantity, 4),    #profit
+                        correspondingBuyOrder._id))                                     #ref_id
+            return order
+        except Exception as err:
+            if 'insufficient balance' in str(err):
+                return None
+            else:
+                raise err
+
 
     def createSellLimitOrder(self, sell_price, correspondingBuyOrder:Order):
         try:

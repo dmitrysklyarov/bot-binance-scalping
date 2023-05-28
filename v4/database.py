@@ -1,5 +1,10 @@
-#run "createdb -O ubuntu botv4" command in order to create database
-#then run "python3 database.py" command to create tables
+#---CREATE DATABASE at ec2---
+#sudo -u postgres psql
+#CREATE DATABASE binance OWNER ubuntu;
+#---CREATE DATABASE locally---
+#createdb -O ubuntu botv4
+
+#then run "python3 database.py" command to create tables and populate orders
 
 import sys
 import psycopg2
