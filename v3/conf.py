@@ -1,8 +1,10 @@
 import configparser
+import os
 
 def __getConfigParser():
     cp = configparser.ConfigParser()
     cp.read("trade.conf")
+    print(os.getcwd())
     return cp
 
 def isContinue():

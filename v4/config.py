@@ -1,36 +1,53 @@
 import configparser
 
-def __getConfigParser():
-    config = configparser.ConfigParser()
-    return config.read('config.ini')
+def __getValue(section, option, type):
+    cp = configparser.ConfigParser()
+    cp.read('main.conf')
+    return type(cp.get(section, option))
 
 def getBase():
-    cp = __getConfigParser()
-    return cp.get('MAIN', 'base')
+    return __getValue('MAIN', 'base', str)
 
 def getQuote():
-    cp = __getConfigParser()
-    return cp.get('MAIN', 'quote')
+    return __getValue('MAIN', 'quote', str)
 
 def getSymbol():
     return getBase() + getQuote()
 
 def getQuantity():
-    cp = __getConfigParser()
-    return cp.getfloat(getBase(), 'quantity')
+    return __getValue(getBase(), 'quantity', float)
+
+def getCommission():
+    return __getValue(getBase(), 'commission', float)
 
 def getIndent():
-    cp = __getConfigParser()
-    return cp.getfloat(getBase(), 'indent')
+    return __getValue(getBase(), 'indent', float)
 
 def getMinIndent():
-    cp = __getConfigParser()
-    return cp.getfloat(getBase(), 'min_indent')
+    return __getValue(getBase(), 'min_indent', float)
 
 def getMaxIndent():
-    cp = __getConfigParser()
-    return cp.getfloat(getBase(), 'max_indent')
+    return __getValue(getBase(), 'max_indent', float)
 
 def getProfit():
-    cp = __getConfigParser()
-    return cp.getfloat(getBase(), 'profit')
+    return __getValue(getBase(), 'profit', float)
+
+def getMinProfit():
+    return __getValue(getBase(), 'min_profit', float)
+
+def getMaxProfit():
+    return __getValue(getBase(), 'max_profit', float)
+
+def __getSecretValue(section, option, type):
+    cp = configparser.ConfigParser()
+    cp.read('secret.conf')
+    return type(cp.get(section, option))
+
+def getDBPassword():
+    return __getSecretValue('database', 'password', str)
+
+def getAPIKey():
+    return __getSecretValue('binance', 'API_KEY', str)
+
+def getAPISecret():
+    return __getSecretValue('binance', 'API_SECRET', str)
