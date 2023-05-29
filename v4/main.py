@@ -1,3 +1,5 @@
+#nohup python3 -u main.py &
+
 import config
 import traceback
 import time
