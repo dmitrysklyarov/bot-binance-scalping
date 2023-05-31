@@ -1,4 +1,5 @@
 import configparser
+import settings
 
 def __getValue(section, option, type):
     cp = configparser.ConfigParser()
@@ -11,6 +12,9 @@ def getBase():
 def getQuote():
     return __getValue('MAIN', 'quote', str)
 
+def getWait():
+    return __getValue('MAIN', 'wait', float)
+
 def getSymbol():
     return getBase() + getQuote()
 
@@ -20,8 +24,14 @@ def getQuantity():
 def getCommission():
     return __getValue(getBase(), 'commission', float)
 
+def getStep():
+    return __getValue(getBase(), 'step', float)
+
 def getIndent():
-    return __getValue(getBase(), 'indent', float)
+    indent = __getValue(getBase(), 'indent', float)
+    indent = indent - settings.waitCounter / getWait() * getStep()
+    indent = indent if indent > getMinIndent() else getMinIndent()
+    return 
 
 def getMinIndent():
     return __getValue(getBase(), 'min_indent', float)

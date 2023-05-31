@@ -5,25 +5,23 @@ import traceback
 import time
 import signal
 import calculator
+import settings
 
 from trade import Trade
 from order import Order
 from datetime import datetime
 
-isContinue = True
 def signal_handler(sig, frame):
-    global isContinue
-    isContinue = False
+    settings.isContinue = False
 signal.signal(signal.SIGTERM, signal_handler)
 
 def wait(seconds):
     for i in range(seconds):
-        if isContinue:
+        if settings.isContinue:
             time.sleep(1)
 
 def main():
-    global isContinue
-    while isContinue:
+    while settings.isContinue:
         try:
             with Trade() as trade:
                 #1. Select NEW or PARTIALLY_FILLED buy limit order from the database
@@ -98,6 +96,7 @@ def main():
 
                             if openedSellLimitOrder._price == sell_price:
                                 wait(1)
+                                settings.increaseWaitCounter()
                                 continue
 
                             #17. Cancel the current sell limit order

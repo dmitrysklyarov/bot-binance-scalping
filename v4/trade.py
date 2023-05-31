@@ -1,5 +1,6 @@
 import psycopg2
 import config
+import settings
 
 from binance import Binance
 from order import Order, OrderDirection
@@ -72,6 +73,20 @@ class Trade:
             return None
         else:
             return Order(self._conn, OrderDirection.BUY, result)
+        
+    def __extractPrice(self, fills:list):
+        amount = 0
+        commission = 0
+        quantity = 0
+        price = 0
+        for fill in fills:
+            amount += float(fill['price']) * float(fill['qty'])
+            quantity += float(fill['qty'])
+            if 'commission' in fill:
+                commission += float(fill['commission'])
+        if quantity > 0:
+            price = round(amount / quantity, 2)
+        return price, commission
     
     #METHODS WITH ORDERS IN BINANCE
     def createBuyMarketOrder(self, buy_value):
@@ -84,12 +99,7 @@ class Trade:
                 type = type,
                 quantity = quantity
                 )
-            amount = 0
-            commission = 0
-            for fill in result['fills']:
-                amount += float(fill['price']) * float(fill['qty'])
-                commission += float(fill['commission'])
-            price = round(amount / quantity, 2)
+            price, commission = self.__extractPrice(result['fills'])
             self._commission_ratio = round(commission / quantity, 6)
             order = Order(self._conn, 
                         OrderDirection.BUY, 
@@ -103,13 +113,13 @@ class Trade:
                         round(commission * (-1) * price, 4),  #commission
                         0,                                    #profit
                         False))                               #satisfied
+            settings.resetWaitCounter()
             return order
         except Exception as err:
             if 'insufficient balance' in str(err):
                 return None
             else:
                 raise err
-
 
     def createBuyLimitOrder(self, buy_price, buy_value):
         try:
@@ -124,6 +134,8 @@ class Trade:
                 price = price,
                 quantity = quantity
                 )
+            if result['status'] == 'FILLED':
+                price, commission = self.__extractPrice(result['fills'])
             order = Order(self._conn, 
                         OrderDirection.BUY, 
                         (result['orderId'],                       #id
@@ -136,6 +148,7 @@ class Trade:
                         0,                                        #commission
                         0,                                        #profit
                         False))                                   #satisfied
+            settings.resetWaitCounter()
             return order
         except Exception as err:
             if 'insufficient balance' in str(err):
@@ -157,12 +170,7 @@ class Trade:
                 type = type,
                 quantity = quantity
                 )
-            amount = 0
-            commission = 0
-            for fill in result['fills']:
-                amount += float(fill['price']) * float(fill['qty'])
-                commission += float(fill['commission'])
-            price = round(amount / quantity, 2)
+            price, commission = self.__extractPrice(result['fills'])
             self._commission_ratio = round(commission / quantity, 6)
             order = Order(self._conn, 
                         OrderDirection.SELL, 
@@ -176,6 +184,7 @@ class Trade:
                         round(price * (self._commission_ratio), 4),                     #commission
                         round((price - correspondingBuyOrder._price) * quantity, 4),    #profit
                         correspondingBuyOrder._id))                                     #ref_id
+            settings.resetWaitCounter()
             return order
         except Exception as err:
             if 'insufficient balance' in str(err):
@@ -197,6 +206,8 @@ class Trade:
                 price = price,
                 quantity = quantity
                 )
+            if result['status'] == 'FILLED':
+                price, commission = self.__extractPrice(result['fills'])
             order = Order(self._conn, 
                         OrderDirection.SELL, 
                         (result['orderId'],                                             #id
@@ -209,6 +220,7 @@ class Trade:
                         round(price * (self._commission_ratio), 4),                     #commission
                         round((price - correspondingBuyOrder._price) * quantity, 4),    #profit
                         correspondingBuyOrder._id))                                     #ref_id
+            settings.resetWaitCounter()
             return order
         except Exception as err:
             if 'insufficient balance' in str(err):
