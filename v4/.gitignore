@@ -2,4 +2,4 @@ secret.conf
 instructions.txt
 commands.py
 __pycache__/
-*.pyc
+__pycache__/*.pyc
