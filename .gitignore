@@ -1,6 +1,6 @@
 test.py
 TODO.txt
 .DS_Store
-error.log
 __pycache__/
 *.pyc
+*.log
