@@ -1,6 +1,7 @@
 import psycopg2
 import config
 import settings
+import logging
 
 from binance import Binance
 from order import Order, OrderDirection
@@ -125,6 +126,7 @@ class Trade:
         try:
             quantity = buy_value
             price = round(buy_price,2)
+            commission = 0
             type = 'LIMIT'
             result = self._binance.createOrder(
                 symbol = config.getSymbol(),
@@ -136,16 +138,17 @@ class Trade:
                 )
             if result['status'] == 'FILLED':
                 price, commission = self.__extractPrice(result['fills'])
+                logging.info(f"Created buy limit order with price: {price}")
             order = Order(self._conn, 
                         OrderDirection.BUY, 
                         (result['orderId'],                       #id
                         0,                                        #date
                         type,                                     #type
-                        'NEW',                                    #status 
+                        result['status'],                         #status 
                         quantity,                                 #quantity
                         0,                                        #filled
                         price,                                    #price
-                        0,                                        #commission
+                        commission,                               #commission
                         0,                                        #profit
                         False))                                   #satisfied
             settings.resetWaitCounter()
@@ -213,7 +216,7 @@ class Trade:
                         (result['orderId'],                                             #id
                         0,                                                              #date
                         type,                                                           #type
-                        'NEW',                                                          #status 
+                        result['status'],                                               #status 
                         quantity,                                                       #quantity
                         0,                                                              #filled
                         price,                                                          #price

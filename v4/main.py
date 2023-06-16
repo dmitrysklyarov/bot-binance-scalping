@@ -1,15 +1,17 @@
 #nohup python3 -u main.py &
 
-import config
 import traceback
 import time
 import signal
 import calculator
 import settings
+import logging
 
 from trade import Trade
 from order import Order
 from datetime import datetime
+
+logging.basicConfig(filename='main.log', level=logging.DEBUG)
 
 def signal_handler(sig, frame):
     settings.isContinue = False

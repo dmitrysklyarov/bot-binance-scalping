@@ -10,6 +10,7 @@ import sys
 import psycopg2
 import configparser
 import config
+import traceback
 
 from trade import Trade
 
@@ -76,3 +77,4 @@ if __name__ == "__main__":
         main()
     except Exception as err:
         print(err)
+        print(traceback.format_exc())

@@ -50,6 +50,9 @@ class Order:
             self._cursor.execute(f'''UPDATE {self._direction.value} SET 
                                      buy_id = {self._buy_id}
                                      WHERE id = {self._id}''')
+            #update satisfaction if sell order is filled from very beginning
+            if self._status == "FILLED":
+                self.__update_satisfcation()
         self._connection.commit()
         return self
 
@@ -59,11 +62,14 @@ class Order:
                                  WHERE id = {self._id}''')
         #update satisfaction if sell order is completed
         if self._direction == OrderDirection.SELL and self._status == "FILLED":
-            self._cursor.execute(f'''UPDATE buy SET 
-                                     satisfied = True
-                                     WHERE id = {self._buy_id}''')
+            self.__update_satisfcation()
         self._connection.commit()
         return self
+
+    def __update_satisfcation(self):
+        self._cursor.execute(f'''UPDATE buy SET 
+                                 satisfied = True
+                                 WHERE id = {self._buy_id}''')
 
     def delete(self):
         self._cursor.execute(f'''DELETE FROM {self._direction.value} WHERE id = {self._id}''')

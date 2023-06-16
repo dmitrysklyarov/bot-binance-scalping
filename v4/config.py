@@ -13,7 +13,7 @@ def getQuote():
     return __getValue('MAIN', 'quote', str)
 
 def getWait():
-    return __getValue('MAIN', 'wait', float)
+    return __getValue('MAIN', 'wait', int)
 
 def getSymbol():
     return getBase() + getQuote()
@@ -29,9 +29,9 @@ def getStep():
 
 def getIndent():
     indent = __getValue(getBase(), 'indent', float)
-    indent = indent - settings.waitCounter / getWait() * getStep()
-    indent = indent if indent > getMinIndent() else getMinIndent()
-    return 
+    #indent = indent - settings.waitCounter / getWait() * getStep()
+    #indent = indent if indent > getMinIndent() else getMinIndent()
+    return indent
 
 def getMinIndent():
     return __getValue(getBase(), 'min_indent', float)
