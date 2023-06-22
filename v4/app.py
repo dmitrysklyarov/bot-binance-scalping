@@ -7,9 +7,10 @@
 
 import psycopg2
 import config
-from flask import Flask
+from flask import Flask, request
 import json
 from trade import Trade
+import logging
 
 app = Flask(__name__)
 
@@ -43,7 +44,6 @@ def profit():
     currentprice = 0
     quote = 0
     base = 0
-
     with Trade() as trade:
         currentprice = round(trade.getMarketPrice())
         quote = round(trade.getQuantity(config.getQuote()))
@@ -66,3 +66,64 @@ def profit():
                     'currentprice' : currentprice,
                     'bottomprice' : bottomprice})
     return j
+
+@app.route('/statistics')
+def statistics():
+    logging.basicConfig(filename='app.log', level=logging.DEBUG)
+    conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=config.getDBPassword())
+    curs = conn.cursor()
+
+    curs.execute("SELECT sum(quantity) FROM buy WHERE not satisfied")
+    baseInOrders = float(curs.fetchone()[0])
+    
+    curs.execute("SELECT price FROM buy WHERE not satisfied ORDER BY price DESC LIMIT 1")
+    topPrice = round(float(curs.fetchone()[0]))
+
+    logging.debug("start trade")
+    bottomPrice = 0
+    currentPrice = 0
+    quote = 0
+    base = 0
+    with Trade() as trade:
+        currentPrice = round(trade.getMarketPrice())
+        quote = round(trade.getQuantity(config.getQuote()))
+        base = round(trade.getQuantity(config.getBase()) * currentPrice)
+        bottomPrice = round(currentPrice - config.getIndent() *  quote / (config.getQuantity() * currentPrice))
+        baseInOrders = round(currentPrice * baseInOrders)
+
+    j = json.dumps({"baseInOrders" : baseInOrders,
+                        "quote" : quote,
+                        "base" : base,
+                        "topPrice" : topPrice,
+                        "currentPrice" : currentPrice,
+                        "bottomPrice" : bottomPrice,
+                        "hourlyProfit" : getInterval('hour', 24, curs),
+                        "dailyProfit" : getInterval('day', 30, curs),
+                        "weeklyProfit" : getInterval('week', 30, curs)})
+    conn.commit()
+    curs.close()
+    conn.close()
+    logging.debug("end basic")
+
+    return j
+
+def getInterval(duration, amount, curs):
+    logging.debug(f"start {duration}")
+    curs.execute(f'''SELECT
+                        DATE_TRUNC('{duration}', date) as {duration},
+                        sum(profit) as profit_summary
+                    FROM 
+                        sell 
+                    WHERE 
+                        date >= now() - interval '{amount} {duration}'
+                    GROUP BY
+                        {duration}
+                    ORDER BY
+                        {duration} DESC
+                    ''')
+    data = curs.fetchall()
+    if len(data) < amount:
+        data.extend([[0,0]] * (amount - len(data)))
+    return [row[1] for row in data]
+
+statistics()
