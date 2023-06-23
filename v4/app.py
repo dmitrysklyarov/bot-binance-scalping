@@ -99,7 +99,8 @@ def statistics():
                         "bottomPrice" : bottomPrice,
                         "hourlyProfit" : getInterval('hour', 24, curs),
                         "dailyProfit" : getInterval('day', 30, curs),
-                        "weeklyProfit" : getInterval('week', 30, curs)})
+                        "weeklyProfit" : getInterval('week', 30, curs),
+                        "lastOrders" : getLastOrders(curs)})
     conn.commit()
     curs.close()
     conn.close()
@@ -126,4 +127,19 @@ def getInterval(duration, amount, curs):
         data.extend([[0,0]] * (amount - len(data)))
     return [row[1] for row in data]
 
-statistics()
+def getLastOrders(curs):
+    curs.execute('''SELECT 'sell' as direction, date, quantity, price, profit FROM sell
+                    WHERE status = 'FILLED'
+                    UNION 
+                    SELECT 'buy' as direction, date, quantity, price, profit FROM buy 
+                    WHERE status = 'FILLED'
+                    ORDER BY date DESC LIMIT 20''')
+    data = curs.fetchall()
+    dataArray = []
+    for i in range(len(data)):
+        dataArray.append({"direction":data[i][0], 
+                          "time":data[i][1].strftime('%H:%M:%S'), 
+                          "filled":data[i][2], 
+                          "price":int(round(data[i][3], 0)),
+                          "profit":data[i][4]})
+    return dataArray
