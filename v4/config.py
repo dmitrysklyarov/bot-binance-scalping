@@ -1,5 +1,4 @@
 import configparser
-import settings
 
 def __getValue(section, option, type):
     cp = configparser.ConfigParser()
