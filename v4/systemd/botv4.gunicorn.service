@@ -1,0 +1,12 @@
+[Unit]
+Description=Statistics for bot v4
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+ExecStart=/usr/bin/gunicorn --workers 1 wsgi:app
+WorkingDirectory=/home/ubuntu/v4
+
+[Install]
+WantedBy=multi-user.target

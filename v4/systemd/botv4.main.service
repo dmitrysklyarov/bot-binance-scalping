@@ -1,0 +1,12 @@
+[Unit]
+Description=Trading bot v4
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+ExecStart=/usr/bin/python3 /home/ubuntu/v4/main.py
+WorkingDirectory=/home/ubuntu/v4
+
+[Install]
+WantedBy=multi-user.target

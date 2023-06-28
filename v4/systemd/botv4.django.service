@@ -1,0 +1,12 @@
+[Unit]
+Description=Manage for bot v4
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+ExecStart=/usr/bin/python3 /home/ubuntu/v4/manage/manage.py runserver 8001
+WorkingDirectory=/home/ubuntu/v4/manage
+
+[Install]
+WantedBy=multi-user.target
