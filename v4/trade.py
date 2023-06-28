@@ -39,13 +39,25 @@ class Trade:
         result = self._binance.tickerPrice(symbol = config.getSymbol())
         return float(result['price'])
     
-    def getQuantity(self, currency):
+    def getQuantity(self, currencies):
         account = self._binance.account()
         json_balances = account['balances']
-        for x in json_balances:
-            if x['asset'] == currency:
-                return float(x['free'])
-        return 0
+        quantities = []
+        for currency in currencies:
+            for x in json_balances:
+                if x['asset'] == currency:
+                    quantities.append(float(x['free']))
+                    break
+        length = len(quantities)
+        match length:
+            case 0:
+                return 0
+            case 1:
+                return quantities[0]
+            case 2:
+                return quantities[0], quantities[1]
+            case _:
+                return quantities
 
     #METHODS WITH ORDERS IN DATABASE
     def __getOpenedLimitOrder(self, direction:OrderDirection):

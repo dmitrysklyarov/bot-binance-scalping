@@ -40,14 +40,21 @@ def profit():
     curs.execute("SELECT price FROM buy WHERE not satisfied ORDER BY price DESC LIMIT 1")
     topprice = round(float(curs.fetchone()[0]))
 
+    curs. execute('''SELECT price FROM 
+                        (SELECT price, date FROM buy
+                        UNION ALL
+                        SELECT price, date FROM sell) AS combined_table
+                    ORDER BY date DESC
+                    LIMIT 1;''')
+    currentprice = round(float(curs.fetchone()[0]))
+
     bottomprice = 0
-    currentprice = 0
     quote = 0
     base = 0
     with Trade() as trade:
-        currentprice = round(trade.getMarketPrice())
-        quote = round(trade.getQuantity(config.getQuote()))
-        base = round(trade.getQuantity(config.getBase()) * currentprice)
+        quote, base = trade.getQuantity((config.getQuote(), config.getBase()))
+        quote = round(quote)
+        base = round(base * currentprice)
         bottomprice = round(currentprice - config.getIndent() *  quote / (config.getQuantity() * currentprice))
         inorders = round(currentprice * inorders)
 
@@ -69,7 +76,7 @@ def profit():
 
 @app.route('/statistics')
 def statistics():
-    logging.basicConfig(filename='app.log', level=logging.DEBUG)
+    #logging.basicConfig(filename='app.log', level=logging.DEBUG)
     conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=config.getDBPassword())
     curs = conn.cursor()
 
@@ -79,15 +86,22 @@ def statistics():
     curs.execute("SELECT price FROM buy WHERE not satisfied ORDER BY price DESC LIMIT 1")
     topPrice = round(float(curs.fetchone()[0]))
 
-    logging.debug("start trade")
+    curs. execute('''SELECT price FROM 
+                        (SELECT price, date FROM buy
+                        UNION ALL
+                        SELECT price, date FROM sell) AS combined_table
+                    ORDER BY date DESC
+                    LIMIT 1;''')
+    currentPrice = round(float(curs.fetchone()[0]))
+
+    #logging.debug("start trade")
     bottomPrice = 0
-    currentPrice = 0
     quote = 0
     base = 0
     with Trade() as trade:
-        currentPrice = round(trade.getMarketPrice())
-        quote = round(trade.getQuantity(config.getQuote()))
-        base = round(trade.getQuantity(config.getBase()) * currentPrice)
+        quote, base = trade.getQuantity((config.getQuote(), config.getBase()))
+        quote = round(quote)
+        base = round(base * currentPrice)
         bottomPrice = round(currentPrice - config.getIndent() *  quote / (config.getQuantity() * currentPrice))
         baseInOrders = round(currentPrice * baseInOrders)
 
