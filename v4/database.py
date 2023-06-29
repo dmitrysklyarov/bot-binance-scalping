@@ -9,13 +9,13 @@
 import sys
 import psycopg2
 import configparser
-import config
+import conf
 import traceback
 
 from trade import Trade
 
 def main():
-    conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=config.getDBPassword())
+    conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=conf.getDBPassword())
     curs = conn.cursor()
     #DROP TABLES
     curs.execute("DROP TABLE IF EXISTS buy")
@@ -58,16 +58,16 @@ def main():
     #create buy orders for existing base
     with Trade() as trade:
         initprice = price = round(trade.getMarketPrice(), 2)
-        baseQuantity = trade.getQuantity(config.getBase())
-        count = int(baseQuantity // config.getQuantity())
+        baseQuantity = trade.getQuantity(conf.getBase())
+        count = int(baseQuantity // conf.getQuantity())
         for i in range(count):
             curs.execute('''INSERT INTO buy
                             (id, status, quantity, filled, price, commission, profit)
                             VALUES ({0}, 'FILLED', {1}, {1}, {2}, {3}, 0)
-                            '''.format(i+1, config.getQuantity(), price, round(config.getQuantity() * price * trade._commission_ratio * (-1), 4)))
-            price += config.getIndent()
+                            '''.format(i+1, conf.getQuantity(), price, round(conf.getQuantity() * price * trade._commission_ratio * (-1), 4)))
+            price += conf.getIndent()
     conn.commit()
-    print(f'{count} buy orders are created for {config.getBase()} in the interval ({initprice}-{price}) with quantity {config.getQuantity()} and indent {config.getIndent()}')
+    print(f'{count} buy orders are created for {conf.getBase()} in the interval ({initprice}-{price}) with quantity {conf.getQuantity()} and indent {conf.getIndent()}')
 
     curs.close()
     conn.close()

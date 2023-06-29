@@ -6,7 +6,7 @@
 #nohup gunicorn --workers 1 wsgi:app &
 
 import psycopg2
-import config
+import conf
 from flask import Flask, request
 import json
 from trade import Trade
@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 @app.route('/profit')
 def profit():
-    conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=config.getDBPassword())
+    conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=conf.getDBPassword())
     curs = conn.cursor()
 
     curs.execute("SELECT sum(profit) FROM sell WHERE date > now() - interval '24 hour'")
@@ -52,10 +52,10 @@ def profit():
     quote = 0
     base = 0
     with Trade() as trade:
-        quote, base = trade.getQuantity((config.getQuote(), config.getBase()))
+        quote, base = trade.getQuantity((conf.getQuote(), conf.getBase()))
         quote = round(quote)
         base = round(base * currentprice)
-        bottomprice = round(currentprice - config.getIndent() *  quote / (config.getQuantity() * currentprice))
+        bottomprice = round(currentprice - conf.getIndent() *  quote / (conf.getQuantity() * currentprice))
         inorders = round(currentprice * inorders)
 
     conn.commit()
@@ -77,7 +77,7 @@ def profit():
 @app.route('/statistics')
 def statistics():
     #logging.basicConfig(filename='app.log', level=logging.DEBUG)
-    conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=config.getDBPassword())
+    conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=conf.getDBPassword())
     curs = conn.cursor()
 
     curs.execute("SELECT sum(quantity) FROM buy WHERE not satisfied")
@@ -99,10 +99,10 @@ def statistics():
     quote = 0
     base = 0
     with Trade() as trade:
-        quote, base = trade.getQuantity((config.getQuote(), config.getBase()))
+        quote, base = trade.getQuantity((conf.getQuote(), conf.getBase()))
         quote = round(quote)
         base = round(base * currentPrice)
-        bottomPrice = round(currentPrice - config.getIndent() *  quote / (config.getQuantity() * currentPrice))
+        bottomPrice = round(currentPrice - conf.getIndent() *  quote / (conf.getQuantity() * currentPrice))
         baseInOrders = round(currentPrice * baseInOrders)
 
     j = json.dumps({"baseInOrders" : baseInOrders,

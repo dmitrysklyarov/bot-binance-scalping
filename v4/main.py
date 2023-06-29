@@ -8,7 +8,6 @@ import settings
 import logging
 
 from trade import Trade
-from order import Order
 from datetime import datetime
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG)

@@ -1,5 +1,5 @@
 import psycopg2
-import config
+import conf
 import settings
 import logging
 
@@ -14,13 +14,13 @@ class Trade:
 
     def __init__(self):
         self._binance = Binance(
-            API_KEY = config.getAPIKey(),
-            API_SECRET = config.getAPISecret())
+            API_KEY = conf.getAPIKey(),
+            API_SECRET = conf.getAPISecret())
 
     def __enter__(self):
-        self._conn = psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=config.getDBPassword())
+        self._conn = psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=conf.getDBPassword())
         self._curs = self._conn.cursor()
-        self._commission_ratio = config.getCommission()
+        self._commission_ratio = conf.getCommission()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -36,7 +36,7 @@ class Trade:
 
     #METHODS WITH BINANCE MARKET
     def getMarketPrice(self):
-        result = self._binance.tickerPrice(symbol = config.getSymbol())
+        result = self._binance.tickerPrice(symbol = conf.getSymbol())
         return float(result['price'])
     
     def getQuantity(self, currencies):
@@ -107,7 +107,7 @@ class Trade:
             quantity = buy_value
             type = 'MARKET'
             result = self._binance.createOrder(
-                symbol = config.getSymbol(),
+                symbol = conf.getSymbol(),
                 side = 'BUY',
                 type = type,
                 quantity = quantity
@@ -141,7 +141,7 @@ class Trade:
             commission = 0
             type = 'LIMIT'
             result = self._binance.createOrder(
-                symbol = config.getSymbol(),
+                symbol = conf.getSymbol(),
                 side = 'BUY',
                 type = type,
                 timeInForce = 'GTC',
@@ -180,7 +180,7 @@ class Trade:
             quantity = correspondingBuyOrder._quantity
             type = 'MARKET'
             result = self._binance.createOrder(
-                symbol = config.getSymbol(),
+                symbol = conf.getSymbol(),
                 side = 'SELL',
                 type = type,
                 quantity = quantity
@@ -214,7 +214,7 @@ class Trade:
             price = round(sell_price, 2)
             type = 'LIMIT'
             result = self._binance.createOrder(
-                symbol = config.getSymbol(),
+                symbol = conf.getSymbol(),
                 side = 'SELL',
                 type = type,
                 timeInForce = 'GTC',
@@ -245,7 +245,7 @@ class Trade:
     
     def cancelLimitOrder(self, order:Order):
         result = self._binance.cancelOrder(
-            symbol = config.getSymbol(),
+            symbol = conf.getSymbol(),
             orderId = order._id
         )
         order._status = result['status']
@@ -254,7 +254,7 @@ class Trade:
     
     def updateLimitOrder(self, order:Order):
         result = self._binance.orderInfo(
-            symbol = config.getSymbol(),
+            symbol = conf.getSymbol(),
             orderId = order._id
         )
         order._status = result['status']
