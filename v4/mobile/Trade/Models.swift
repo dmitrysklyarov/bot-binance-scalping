@@ -27,3 +27,27 @@ struct StatisticsOrder : Codable{
     var price:Int
     var profit:Double
 }
+
+struct Config : Codable{
+    var MAIN:ConfigMain
+    var BTC:ConfigBase
+    var ETH:ConfigBase
+}
+
+struct ConfigMain : Codable{
+    var base:String
+    var quote:String
+    var wait:String
+}
+
+struct ConfigBase : Codable{
+    var quantity:String
+    var step:String
+    var indent:String
+    var min_indent:String
+    var max_indent:String
+    var profit:String
+    var min_profit:String
+    var max_profit:String
+    var commission:String
+}

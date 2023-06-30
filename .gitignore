@@ -4,3 +4,4 @@ TODO.txt
 __pycache__/
 *.pyc
 *.log
+v4/mobile/Trade/secret.swift

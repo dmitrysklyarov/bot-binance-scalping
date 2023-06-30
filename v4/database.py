@@ -58,7 +58,7 @@ def main():
     #create buy orders for existing base
     with Trade() as trade:
         initprice = price = round(trade.getMarketPrice(), 2)
-        baseQuantity = trade.getQuantity(conf.getBase())
+        baseQuantity = trade.getQuantity([conf.getBase()])
         count = int(baseQuantity // conf.getQuantity())
         for i in range(count):
             curs.execute('''INSERT INTO buy

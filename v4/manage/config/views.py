@@ -33,7 +33,8 @@ def get_config(request):
 @csrf_exempt
 def set_config(request):
     try:
-        # check if the request method is PUT
+        # check if the request method is POST
+        logging.info(request.method)
         if request.method == 'POST':
 
             # get the request parameters
