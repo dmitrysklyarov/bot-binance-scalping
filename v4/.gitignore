@@ -1,5 +1,5 @@
 secret.conf
-secret.swift
+mobile/secret.swift
 instructions.txt
 commands.py
 __pycache__/
