@@ -14,9 +14,13 @@ import logging
 
 app = Flask(__name__)
 
+def getConnection():
+    conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=conf.getDBPassword())
+    return conn
+
 @app.route('/profit')
 def profit():
-    conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=conf.getDBPassword())
+    conn =  getConnection()
     curs = conn.cursor()
 
     curs.execute("SELECT sum(profit) FROM sell WHERE date > now() - interval '24 hour'")
@@ -77,7 +81,7 @@ def profit():
 @app.route('/statistics')
 def statistics():
     #logging.basicConfig(filename='app.log', level=logging.DEBUG)
-    conn =  psycopg2.connect(database="botv4", host="127.0.0.1", port="5432", user="ubuntu", password=conf.getDBPassword())
+    conn =  getConnection()
     curs = conn.cursor()
 
     curs.execute("SELECT sum(quantity) FROM buy WHERE not satisfied")
@@ -140,6 +144,16 @@ def getInterval(duration, amount, curs):
     if len(data) < amount:
         data.extend([[0,0]] * (amount - len(data)))
     return [row[1] for row in data]
+
+@app.route('/orders')
+def orders():
+    conn =  getConnection()
+    curs = conn.cursor()
+    j = json.dumps({"lastOrders" : getLastOrders(curs)})
+    conn.commit()
+    curs.close()
+    conn.close()
+    return j
 
 def getLastOrders(curs):
     curs.execute('''SELECT 'sell' as direction, date, quantity, price, profit FROM sell
