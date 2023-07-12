@@ -38,14 +38,19 @@ def main():
                         #4. Create new buy limit order with buy_price and buy_value
                         openedBuyLimitOrder = trade.createBuyLimitOrder(buy_price, buy_value)
                     if openedBuyLimitOrder is None:
-                        # If not enough quote, then sell top order
-                        sellMarketOrder = trade.createSellMarketOrder(trade.getNotSatisfiedOrder(True))
-                        if sellMarketOrder is None:
-                            wait(60)
-                            raise Exception("Nothing to sell and not enough quote")
+                        # If not enough quote, then check settings, whether we need to sell top order
+                        if settings.getSellTopOrder():
+                            # Need to sell, then sell top order
+                            sellMarketOrder = trade.createSellMarketOrder(trade.getNotSatisfiedOrder(True))
+                            if sellMarketOrder is None:
+                                wait(60)
+                                raise Exception("Nothing to sell and not enough quote")
+                            else:
+                                sellMarketOrder.insert()
+                                sellMarketOrder.update()#in order to set up satisfaction to buy order
                         else:
-                            sellMarketOrder.insert()
-                            sellMarketOrder.update()#in order to set up satisfaction to buy order
+                            # No need to sell, then just wait
+                            wait(60)
                     else:
                         # Otherwise, insert buy order to database (price, status = FILLED, average amount)
                         openedBuyLimitOrder.insert()

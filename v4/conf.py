@@ -5,6 +5,9 @@ def __getValue(section, option, type):
     cp.read('main.conf')
     return type(cp.get(section, option))
 
+def getSellFromTop():
+    return __getValue('MAIN', 'sell_from_top', bool)
+
 def getBase():
     return __getValue('MAIN', 'base', str)
 
