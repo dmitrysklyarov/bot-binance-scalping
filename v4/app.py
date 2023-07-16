@@ -10,7 +10,6 @@ import conf
 from flask import Flask, request
 import json
 from trade import Trade
-import logging
 
 app = Flask(__name__)
 
@@ -80,7 +79,6 @@ def profit():
 
 @app.route('/statistics')
 def statistics():
-    #logging.basicConfig(filename='app.log', level=logging.DEBUG)
     conn =  getConnection()
     curs = conn.cursor()
 
@@ -98,7 +96,6 @@ def statistics():
                     LIMIT 1;''')
     currentPrice = round(float(curs.fetchone()[0]))
 
-    #logging.debug("start trade")
     bottomPrice = 0
     quote = 0
     base = 0
@@ -117,28 +114,27 @@ def statistics():
                         "bottomPrice" : bottomPrice,
                         "hourlyProfit" : getInterval('hour', 24, curs),
                         "dailyProfit" : getInterval('day', 30, curs),
-                        "weeklyProfit" : getInterval('week', 30, curs),
-                        "lastOrders" : getLastOrders(curs)})
+                        "weeklyProfit" : getInterval('week', 30, curs)
+                    })
     conn.commit()
     curs.close()
     conn.close()
-    logging.debug("end basic")
 
     return j
 
 def getInterval(duration, amount, curs):
-    logging.debug(f"start {duration}")
     curs.execute(f'''SELECT
                         DATE_TRUNC('{duration}', date) as {duration},
                         sum(profit) as profit_summary
                     FROM 
                         sell 
                     WHERE 
-                        date >= now() - interval '{amount} {duration}'
+                        date > now() - interval '{amount} {duration}'
                     GROUP BY
                         {duration}
                     ORDER BY
                         {duration} DESC
+                    LIMIT {amount}
                     ''')
     data = curs.fetchall()
     if len(data) < amount:
