@@ -157,7 +157,7 @@ def getLastOrders(curs):
                     UNION 
                     SELECT 'buy' as direction, date, quantity, price, profit FROM buy 
                     WHERE status = 'FILLED'
-                    ORDER BY date DESC LIMIT 20''')
+                    ORDER BY date DESC LIMIT 100''')
     data = curs.fetchall()
     dataArray = []
     for i in range(len(data)):
