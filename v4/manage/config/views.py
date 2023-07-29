@@ -6,15 +6,9 @@ import configparser
 from django.views.decorators.csrf import csrf_exempt
 import configparser
 import json
-import logging
+import subprocess
 
-# Create your views here.
-
-def get_config(request):
-
-    logging.basicConfig(filename='views.log', level=logging.INFO)
-    logging.info('get_config() called')
-    
+def get_config(request):    
     # create a ConfigParser object
     config = configparser.ConfigParser()
     config.read('../main.conf')
@@ -34,7 +28,6 @@ def get_config(request):
 def set_config(request):
     try:
         # check if the request method is POST
-        logging.info(request.method)
         if request.method == 'POST':
 
             # get the request parameters
@@ -80,3 +73,47 @@ def set_config(request):
     except Exception as e:
         # return an error message as a JsonResponse object
         return JsonResponse({'error': 'An error occurred. {}'.format(e).encode('utf-8')}, status=400)
+
+@csrf_exempt
+def service_action(request):
+    token = request.POST.get('token')
+    action = request.POST.get('action')
+    service = request.POST.get('service')
+
+    cp = configparser.ConfigParser()
+    cp.read('../secret.conf')
+    if token != cp['django']['token']:
+        return JsonResponse({'error': 'Invalid token.'}, status=401)
+    
+    # check if action is valid
+    if action == None or action not in ("start", "stop", "restart"):
+        return JsonResponse({'error': 'Invalid action.'}, status=400)
+    
+    # check if service is valid
+    if service == None or len(service) == 0:
+        return JsonResponse({'error': 'Missing service parameters.'}, status=400)
+    
+    # check if service exists
+    command = ['systemctl', 'status', service]
+    try:
+        subprocess.check_output(command)
+    except subprocess.CalledProcessError:
+        return JsonResponse({'error': 'Service {} does not exist.'.format(service)}, status=400)
+
+    # check if try to start when service is already running and stop when service is not running    
+    command = ['systemctl', 'is-active', service]
+    try:
+        subprocess.check_output(command)
+        if action == 'start':
+            return JsonResponse({'error': 'Service {} already started.'.format(service)}, status=400)
+    except:
+        if action == 'stop':
+            return JsonResponse({'error': 'Service {} already stopped.'.format(service)}, status=400)
+    
+    # execute action
+    command = ['sudo systemctl', action, service]
+    try:
+        subprocess.check_output(command)
+        return JsonResponse({'message': 'Service {} successfully {}ed.'.format(service, action)})
+    except Exception as err:
+        return JsonResponse({'error': 'An error occurred. {}'.format(err.args[0]).encode('utf-8')}, status=400)

@@ -150,7 +150,7 @@ class Trade:
                 )
             if result['status'] == 'FILLED':
                 price, commission = self.__extractPrice(result['fills'])
-                logging.info(f"Created buy limit order with price: {price}")
+                #logging.info(f"Created buy limit order with price: {price}")
             order = Order(self._conn, 
                         OrderDirection.BUY, 
                         (result['orderId'],                       #id

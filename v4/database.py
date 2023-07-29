@@ -6,9 +6,7 @@
 
 #then run "python3 database.py" command to create tables and populate orders
 
-import sys
 import psycopg2
-import configparser
 import conf
 import traceback
 

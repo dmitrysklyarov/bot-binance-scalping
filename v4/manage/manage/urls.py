@@ -21,5 +21,6 @@ from config import views
 urlpatterns = [
     #path('admin/', admin.site.urls),
     path('get_config', views.get_config),
-    path('set_config', views.set_config)
+    path('set_config', views.set_config),
+    path('service_action', views.service_action),
 ]

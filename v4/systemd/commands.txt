@@ -1,0 +1,12 @@
+sudo systemctl restart botv4.main.service 
+sudo systemctl restart botv4.gunicorn.service 
+sudo systemctl restart botv4.django.service
+sudo systemctl restart nginx.service
+
+sudo systemctl stop botv4.main.service 
+sudo systemctl stop botv4.gunicorn.service 
+sudo systemctl stop botv4.django.service 
+
+sudo systemctl start botv4.main.service 
+sudo systemctl start botv4.gunicorn.service 
+sudo systemctl start botv4.django.service 

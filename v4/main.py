@@ -10,8 +10,6 @@ import logging
 from trade import Trade
 from datetime import datetime
 
-logging.basicConfig(filename='main.log', level=logging.DEBUG)
-
 def signal_handler(sig, frame):
     settings.isContinue = False
 signal.signal(signal.SIGTERM, signal_handler)
@@ -21,7 +19,10 @@ def wait(seconds):
         if settings.isContinue:
             time.sleep(1)
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 def main():
+    logging.info('start main()')
     while settings.isContinue:
         try:
             with Trade() as trade:
