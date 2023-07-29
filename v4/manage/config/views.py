@@ -9,6 +9,7 @@ import json
 import subprocess
 import logging
 
+'''
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 # Create a file handler and set its level
 file_handler = logging.FileHandler('views.error.log')
@@ -18,6 +19,7 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(formatter)
 # Add the file handler to the root logger
 logging.getLogger().addHandler(file_handler)
+'''
 
 def get_config(request):    
     # create a ConfigParser object
@@ -124,11 +126,11 @@ def service_action(request):
     
     # execute action
     command = ['sudo', 'systemctl', action, service]
-    logging.info("starting try for {0} {1}".format(action, service))
+    #logging.info("starting try for {0} {1}".format(action, service))
     try:
         subprocess.check_output(command)
-        logging.info("command executed successfully")
+        #logging.info("command executed successfully")
         return JsonResponse({'message': 'Service {0} successfully {1}ed.'.format(service, action)})
     except Exception as err:
-        logging.error(str(err))
+        #logging.error(str(err))
         return JsonResponse({'error': 'Unknown error occurred.'}, status=400)
