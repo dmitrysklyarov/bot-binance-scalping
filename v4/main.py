@@ -116,7 +116,7 @@ def main():
                                 openedSellLimitOrder._status = "FILLED"
                                 openedSellLimitOrder.update()
         except Exception as err:
-            with open("error.log", "a") as text_file:
+            with open("main.error.log", "a") as text_file:
                 text_file.write(datetime.now().strftime("%d/%m/%y %H:%M:%S: ------------------------------"))
                 text_file.write(traceback.format_exc())
                 text_file.write(str(err) + "\n\n")
