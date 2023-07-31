@@ -106,12 +106,14 @@ def service_action(request):
     if service == None or len(service) == 0:
         return JsonResponse({'error': 'Missing service parameters.'}, status=400)
     
+    '''
     # check if service exists
     command = ['systemctl', 'status', service]
     try:
-        subprocess.check_output(command)
+        subprocess.check_output(command, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError:
         return JsonResponse({'error': 'Service {} does not exist.'.format(service)}, status=400)
+    '''
 
     if action == 'start' or action == 'stop':
         # check if try to start when service is already running and stop when service is not running    
